@@ -7,8 +7,10 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 
-FROM gcr.io/distroless/java17:nonroot
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=builder /app/target/spring-boot-data-jpa-0.0.1-SNAPSHOT.jar app.jar
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
