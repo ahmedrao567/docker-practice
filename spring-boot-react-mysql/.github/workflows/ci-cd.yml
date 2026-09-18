@@ -2,8 +2,8 @@ name: Spring Boot React MySQL CI/CD
 
 on:
   push:
-    branches:
-      - main
+  pull_request:
+  workflow_dispatch:
 
 env:
   WEB_IMAGE: ${{ secrets.DOCKER_USERNAME }}/spring-boot-react-mysql-web
@@ -52,6 +52,7 @@ jobs:
   deploy:
     needs: docker-build
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout Repository
