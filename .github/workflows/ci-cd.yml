@@ -32,8 +32,8 @@ jobs:
       - name: Build and Push Backend API
         uses: docker/build-push-action@v6
         with:
-          context: ./spring-boot-server
-          file: ./spring-boot-server/Dockerfile
+          context: ./spring-boot-react-mysql/spring-boot-server
+          file: ./spring-boot-react-mysql/spring-boot-server/Dockerfile
           push: true
           tags: |
             ${{ env.API_IMAGE }}:latest
@@ -42,8 +42,8 @@ jobs:
       - name: Build and Push Frontend Web
         uses: docker/build-push-action@v6
         with:
-          context: ./react-client
-          file: ./react-client/Dockerfile
+          context: ./spring-boot-react-mysql/react-client
+          file: ./spring-boot-react-mysql/react-client/Dockerfile
           push: true
           tags: |
             ${{ env.WEB_IMAGE }}:latest
@@ -65,9 +65,9 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu
+            cd /home/ubuntu/spring-boot-react-mysql
 
-            docker compose pull
-            docker compose up -d
+            docker compose -f docker-compose.ec2.yml pull
+            docker compose -f docker-compose.ec2.yml up -d
 
             docker image prune -f
