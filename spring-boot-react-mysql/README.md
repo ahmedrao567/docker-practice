@@ -44,3 +44,18 @@ mvn clean install
 ```
 mvn spring-boot:run
 ```
+
+## CI/CD
+
+The repository includes a simple GitHub Actions pipeline at [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml).
+
+It builds and pushes two Docker images to Docker Hub on every push to `main`, then deploys to EC2 through SSH.
+
+Required GitHub secrets:
+
+1. `DOCKER_USERNAME`
+2. `DOCKER_PASSWORD`
+3. `EC2_HOST`
+4. `EC2_SSH_KEY`
+
+The EC2 user is fixed to `ubuntu`, and the deployment script runs from `/home/ubuntu`.
