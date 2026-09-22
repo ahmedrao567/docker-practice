@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-api-service
+  namespace: tutorial-app
+  labels:
+    app: springboot-api
+spec:
+  type: ClusterIP
+  selector:
+    app: springboot-api
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP

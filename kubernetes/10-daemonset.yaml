@@ -1,0 +1,47 @@
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-monitor
+  namespace: tutorial-app
+  labels:
+    app: node-monitor
+spec:
+  selector:
+    matchLabels:
+      app: node-monitor
+  template:
+    metadata:
+      labels:
+        app: node-monitor
+    spec:
+ 
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      containers:
+      - name: node-monitor
+        image: busybox:latest
+        command: ['/bin/sh']
+        args: 
+        - -c
+        - |
+          while true; do
+            echo "Node: $(hostname) - Monitoring at $(date)"
+            sleep 300
+          done
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+        volumeMounts:
+        - name: host-root
+          mountPath: /host
+          readOnly: true
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /

@@ -1,0 +1,42 @@
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: springboot-api-replica
+  namespace: tutorial-app
+  labels:
+    app: springboot-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springboot-api
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: springboot-api
+        tier: backend
+    spec:
+      containers:
+      - name: springboot-api
+        image: bezkoder/spring-boot-tutorials:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            secretKeyRef:
+              name: spring-database-credentials
+              key: datasource-url
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: spring-database-credentials
+              key: datasource-username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: spring-database-credentials
+              key: datasource-password
+

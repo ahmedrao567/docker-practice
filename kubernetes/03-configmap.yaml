@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: tutorial-app
+data:
+  # Spring Boot configuration
+  spring-jpa-hibernate-ddl-auto: "update"
+  spring-jpa-hibernate-dialect: "org.hibernate.dialect.MySQLDialect"
+  server-port: "8080"
+  server-servlet-context-path: "/"
+  
+  # Application metadata
+  app-name: "Spring-React-Tutorial-App"
+  app-version: "1.0.0"
+  
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: tutorial-app
+data:
+  default.conf: |
+    upstream api {
+      server springboot-api-service:8080;
+    }
+
+    server {
+      listen 80;
+      location /api {
+        proxy_pass http://api;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+      }
+
+      location / {
+        root /usr/share/nginx/html;
+        index index.html;
+        try_files $uri /index.html;
+      }
+    }
