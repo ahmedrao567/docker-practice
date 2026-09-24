@@ -47,9 +47,11 @@ spec:
           timeoutSeconds: 3
           failureThreshold: 3
         volumeMounts:
-        - name: nginx-config
-          mountPath: /etc/nginx/conf.d
+        # Explicitly mount only default.conf using subPath
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
       volumes:
-      - name: nginx-config
+      - name: nginx-config-volume
         configMap:
           name: nginx-config

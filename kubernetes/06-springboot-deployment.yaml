@@ -19,6 +19,10 @@ spec:
         prometheus.io/port: "8080"
     spec:
       serviceAccountName: default
+      initContainers:
+      - name: wait-for-mysql
+        image: busybox:1.31.1
+        command: ['sh', '-c', "until nc -z -w 2 mysql-database 3306; do echo 'Waiting for MySQL...'; sleep 2; done"]
       containers:
       - name: springboot-api
         image: ahmedikram567/spring-boot-server:latest
@@ -65,23 +69,20 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
+        # Updated to query your actual controller path
         readinessProbe:
           httpGet:
-            path: /
+            path: /api/tutorials
             port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
-      initContainers:
-      - name: wait-for-mysql
-        image: busybox:1.28
-        command: ['sh', '-c', "until nc -z mysql-database:3306; do echo waiting for mysql; sleep 2; done"]
+          initialDelaySeconds: 40  # Increased delay to account for the ~22 second Spring Boot boot time
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /api/tutorials
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
