@@ -18,19 +18,44 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
     spec:
-      serviceAccountName: default
+      # Hardened: Using dedicated ServiceAccount instead of default
+      serviceAccountName: springboot-sa
+      automountServiceAccountToken: false
+      
+      # Security Context: Enforce non-root execution across all containers
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+
       initContainers:
       - name: wait-for-mysql
         image: busybox:1.31.1
         command: ['sh', '-c', "until nc -z -w 2 mysql-database 3306; do echo 'Waiting for MySQL...'; sleep 2; done"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+
       containers:
       - name: springboot-api
         image: ahmedikram567/spring-boot-server:latest
         imagePullPolicy: IfNotPresent
+        
+        # Hardened Container Security Context
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+            
         ports:
         - name: http
           containerPort: 8080
           protocol: TCP
+
         env:
         - name: SPRING_DATASOURCE_URL
           valueFrom:
@@ -62,6 +87,13 @@ spec:
             configMapKeyRef:
               name: app-config
               key: server-servlet-context-path
+
+        # Volume Mount for Hardened Secret Reading
+        volumeMounts:
+        - name: db-secrets
+          mountPath: "/etc/secrets"
+          readOnly: true
+
         resources:
           requests:
             memory: "256Mi"
@@ -69,15 +101,16 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
-        # Updated to query your actual controller path
+
         readinessProbe:
           httpGet:
             path: /api/tutorials
             port: 8080
-          initialDelaySeconds: 40  # Increased delay to account for the ~22 second Spring Boot boot time
+          initialDelaySeconds: 40
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 5
+
         livenessProbe:
           httpGet:
             path: /api/tutorials
@@ -86,3 +119,8 @@ spec:
           periodSeconds: 15
           timeoutSeconds: 5
           failureThreshold: 5
+
+      volumes:
+      - name: db-secrets
+        secret:
+          secretName: spring-database-credentials
