@@ -1,0 +1,23 @@
+name: ARC Runner Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: arc-runner-set
+
+    steps:
+      - name: Show runner information
+        run: |
+          echo "================================"
+          echo "Hello from ARC!"
+          echo "================================"
+          echo "Runner: $RUNNER_NAME"
+          echo "OS: $RUNNER_OS"
+          echo "Architecture: $RUNNER_ARCH"
+
+      - name: Check Docker
+        run: |
+          docker version
+          docker info
